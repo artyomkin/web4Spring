@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import web4.models.Point;
 import web4.repositories.PointRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 //@CrossOrigin(origins = "http://localhost:4200")
@@ -30,6 +31,6 @@ public class PointController {
     @GetMapping("/clearPoints")
     public List<Point> clearPoints() {
         pointRepository.deleteAll();
-        return null;
+        return new ArrayList<>();
     }
 }
