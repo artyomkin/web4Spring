@@ -1,7 +1,10 @@
 package web4.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import web4.Validator.PointsValidator;
 import web4.models.Point;
 import web4.models.User;
 import web4.services.PointService;
@@ -19,6 +22,8 @@ public class PointController {
     private PointService pointService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private PointsValidator pointsValidator;
 
     @GetMapping("/getPoints/{id}")
     public List<Point> getPoints(@PathVariable(value = "id") long id) {
@@ -27,11 +32,18 @@ public class PointController {
     }
 
     @PostMapping("/addPoint/{id}")
-    public Point createPoint(@PathVariable(value = "id") long id, @RequestBody Point point) {
-        point.setResult("Da");
-        point.setAuthor(userService.getUserById(id));
-        System.out.println(point);
-        return pointService.createPoint(point);
+    public ResponseEntity<String> createPoint(@PathVariable(value = "id") long id, @RequestBody Point point) {
+        try {
+            if (pointsValidator.validate(point)) {
+                point.setAuthor(userService.getUserById(id));
+                System.out.println(point);
+//                return pointService.createPoint(point);
+                return new ResponseEntity<>("Выстрел успешно добавлен",HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>("Возникла ошибка", HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>("Данные не валидные, повторите ввод", HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping("/clearPoints/{id}")

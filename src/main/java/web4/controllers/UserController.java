@@ -1,12 +1,9 @@
 package web4.controllers;
 
-import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,7 +17,9 @@ import web4.services.UserService;
 @RestController
 public class UserController {
     @Autowired
-    UserService userService;
+    private UserService userService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/registration")
     public ResponseEntity<String> addUser(@RequestBody User user) {
@@ -30,9 +29,9 @@ public class UserController {
         if (userService.loadUserByUsername(user.getUsername()) != null) {
             return new ResponseEntity<>("Пользователь с таким логином уже существует", HttpStatus.BAD_REQUEST);
         }
-        System.out.println(user);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userService.addUser(user);
-        String message="Пользователь успешно добавлен, id=" + userService.loadUserByUsername(user.getUsername()).getId();
+        String message = "Пользователь успешно добавлен, id=" + userService.loadUserByUsername(user.getUsername()).getId();
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
@@ -41,24 +40,19 @@ public class UserController {
         if (user.getUsername().equals("") || user.getPassword().equals("")) {
             return new ResponseEntity<>("Поля не могут быть пустыми", HttpStatus.BAD_REQUEST);
         }
-        System.out.println(user);
         User userFromDB = userService.loadUserByUsername(user.getUsername());
         if (userFromDB == null) {
             return new ResponseEntity<>("Пользователь не найдён", HttpStatus.BAD_REQUEST);
-        } else if (!userFromDB.getPassword().equals(user.getPassword())) {
+        } else if (!checkUser(user)) {
             return new ResponseEntity<>("Пароль указан неверно", HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("Пользователь успешно авторизовался, id=" + userFromDB.getId(), HttpStatus.OK);
     }
-//    public void doAutoLogin(String username,String password){
-//        try {
-//            // Must be called from request filtered by Spring Security, otherwise SecurityContextHolder is not updated
-//            UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
-//            Authentication authentication = this.authenticationProvider.authenticate(token);
-//            SecurityContextHolder.getContext().setAuthentication(authentication);
-//        } catch (Exception e) {
-//            SecurityContextHolder.getContext().setAuthentication(null);
-//            logger.error("Failure in autoLogin", e);
-//        }
-//    }
+    public boolean checkUser(User user) {
+        User userByLogin = userService.loadUserByUsername(user.getUsername());
+        if (userByLogin == null) {
+            return false;
+        }
+        return passwordEncoder.matches(user.getPassword(), userByLogin.getPassword());
+    }
 }

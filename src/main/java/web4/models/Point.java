@@ -13,11 +13,11 @@ public class Point {
     @Column(name = "id", nullable = false)
     private Long id;
     @Column(name = "xVal", nullable = false)
-    private Double x;
+    private String x;
     @Column(name = "yVal", nullable = false)
-    private Double y;
+    private String y;
     @Column(name = "rVal", nullable = false)
-    private Double r;
+    private String r;
     @Column(name = "res", nullable = false)
     private String result;
     @ManyToOne(fetch = FetchType.EAGER)
@@ -27,7 +27,7 @@ public class Point {
     public Point() {
     }
 
-    public Point(Double x, Double y, Double r, String result, User user) {
+    public Point(String x, String y, String r, String result, User user) {
         this.x = x;
         this.y = y;
         this.r = r;
