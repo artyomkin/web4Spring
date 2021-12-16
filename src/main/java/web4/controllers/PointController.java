@@ -27,23 +27,30 @@ public class PointController {
 
     @GetMapping("/getPoints/{id}")
     public List<Point> getPoints(@PathVariable(value = "id") long id) {
+        System.out.println("ya tyt");
+        System.out.println(id);
         User user = userService.getUserById(id);
+        List<Point> p= pointService.findPointsByAuthor(user);
+        System.out.println(p);
         return pointService.findPointsByAuthor(user);
     }
 
     @PostMapping("/addPoint/{id}")
-    public ResponseEntity<String> createPoint(@PathVariable(value = "id") long id, @RequestBody Point point) {
+    public Point createPoint(@PathVariable(value = "id") long id, @RequestBody Point point) {
         try {
             if (pointsValidator.validate(point)) {
                 point.setAuthor(userService.getUserById(id));
                 System.out.println(point);
-//                return pointService.createPoint(point);
-                return new ResponseEntity<>("Выстрел успешно добавлен",HttpStatus.OK);
+                return pointService.createPoint(point);
+//                return new ResponseEntity<String>("Выстрел успешно добавлен",HttpStatus.OK);\
+//                return point;
             }
         } catch (Exception e) {
-            return new ResponseEntity<>("Возникла ошибка", HttpStatus.BAD_REQUEST);
+            return null;
+//            return new ResponseEntity<>("Возникла ошибка", HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>("Данные не валидные, повторите ввод", HttpStatus.BAD_REQUEST);
+//        return new ResponseEntity<>("Данные не валидные, повторите ввод", HttpStatus.BAD_REQUEST);
+        return null;
     }
 
     @GetMapping("/clearPoints/{id}")
